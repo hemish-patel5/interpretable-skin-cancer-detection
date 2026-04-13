@@ -1,38 +1,44 @@
 import pandas as pd
-import numpy as np
-from skExSTraCS import ExSTraCS
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score
+from sklearn.preprocessing import LabelEncoder
+from skeLCS import eLCS
 
-# 1. Load the data you created in the extraction step
-df = pd.read_csv('capstone_features.csv')
+df = pd.read_csv("capstone_features.csv")
 
-# 2. Prepare the data
-# X = all the feature columns (LBP, HOG, DWT)
-# y = the 'target' column (1 or 0)
-X = df.drop(['image_id', 'target'], axis=1).values
-y = df['target'].values
+feature_cols = [col for col in df.columns if col != 'image_id' and col != 'label']
+X = df[feature_cols].values
+y = df["label"].values
 
-# 3. Split into Training (80%) and Testing (20%)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
 
-# 4. Initialize the eLCS Model
-# We start with 1000 iterations for a quick "Proof of Concept" for Friday
-model = ExSTraCS(learning_iterations=1000, 
-                 N=500, # Max number of rules in the population
-                 track_accuracy_while_fit=True)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y_encoded, test_size=0.2, random_state=42
+)
 
-print("Starting LCS Training Loop...")
+print(f"Training samples: {len(X_train)}")
+print(f"Testing samples:  {len(X_test)}")
+print("Training eLCS — please wait...")
 
-# 5. Train the model
+model = eLCS(
+    learning_iterations=2000,
+    N=500,
+    nu=5,
+    chi=0.8,
+    upsilon=0.04,
+    theta_del=20,
+)
+
 model.fit(X_train, y_train)
 
-# 6. Get the results for Slide 14
-predictions = model.predict(X_test)
-print("\n--- PERFORMANCE REPORT ---")
-print(classification_report(y_test, predictions))
+y_pred = model.predict(X_test)
 
-# 7. Export the "Interpretable" Rules
-# This is the 'Outcome' of your project!
-model.export_iteration_tracking_data("lcs_rules.csv")
-print("\nSuccess! Results generated and rules exported to 'lcs_rules.csv'.")
+bal_acc = balanced_accuracy_score(y_test, y_pred)
+prec    = precision_score(y_test, y_pred, zero_division=0)
+rec     = recall_score(y_test, y_pred, zero_division=0)
+
+print("\n=== RESULTS ===")
+print(f"Balanced Accuracy : {bal_acc * 100:.1f}%")
+print(f"Precision         : {prec * 100:.1f}%")
+print(f"Recall            : {rec * 100:.1f}%")
