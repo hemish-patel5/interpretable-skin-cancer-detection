@@ -26,7 +26,7 @@ model = eLCS(
     N=500,
     nu=5,
     chi=0.8,
-    upsilon=0.04,
+    mu=0.04,
     theta_del=20,
 )
 
