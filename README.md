@@ -1,1 +1,1 @@
-# interpretable-skin-cancer-detection
+# Interpretable Skin Cancer Detection
