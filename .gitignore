@@ -2,3 +2,12 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+
+new_capstone_features.csv
+
+capstone_features.csv
+
+features_LBP.csv
+features_HOG.csv
+features_DWT.csv
+features_ALL.csv
